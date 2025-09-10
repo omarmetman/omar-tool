@@ -1,32 +1,25 @@
 #!/bin/bash
-# Omar-tool Ultimate Installer for Termux
-# Author: Omar M. Etman
+# Omar-tool setup script for Termux (English)
 
-echo "[*] تحديث النظام..."
-pkg update -y && pkg upgrade -y
+echo "[*] Updating system..."
+pkg update -y
+pkg upgrade -y
 
-echo "[*] تثبيت git و python و nano..."
+echo "[*] Installing core packages..."
 pkg install git python nano -y
+python3 -m ensurepip
 
-echo "[*] تثبيت pip..."
-python3 -m ensurepip --upgrade
-pip install --upgrade pip
+echo "[*] Removing old Omar-tool..."
+rm -rf ~/omar-tool
 
-# استنساخ الريبو
-REPO_URL=${1:-"https://github.com/username/omar-tool.git"}
-if [ -d "omar-tool" ]; then
-    echo "[*] المجلد موجود بالفعل، لن يتم الاستنساخ."
-else
-    echo "[*] استنساخ الريبو من: $REPO_URL"
-    git clone "$REPO_URL"
-fi
+echo "[*] Cloning Omar-tool..."
+git clone https://github.com/omarmetman/omar-tool.git
+cd omar-tool || { echo "❌ Folder not found!"; exit 1; }
 
-cd omar-tool || exit
-
-echo "[*] تثبيت الحزم المطلوبة..."
+echo "[*] Installing required Python packages..."
 pip install -r requirements.txt
 
-# إضافة alias
+# Add alias
 ALIAS="alias omar='python3 $(pwd)/omar.py'"
 FILES=(~/.bashrc ~/.profile ~/.zshrc)
 for f in "${FILES[@]}"; do
@@ -35,5 +28,6 @@ for f in "${FILES[@]}"; do
     fi
 done
 
-echo "تم الإعداد بنجاح!"
-echo "لتفعيل alias: source ~/.bashrc أو إعادة تشغيل Termux"
+echo "[✅] Setup completed!"
+echo "Run the tool with: omar"
+echo "Activate alias immediately: source ~/.bashrc"
