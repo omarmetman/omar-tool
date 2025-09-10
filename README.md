@@ -1,98 +1,119 @@
-# Omar-tool Ultimate 2025
-أداة معلومات عامة متقدمة عن المواقع، بلغة Python 3، قابلة للتشغيل على Termux.
+# Omar-tool
 
-## المتطلبات
-- Termux على Android
-- Python 3
-- git
+Omar M. Etman - Command line tool for site/domain reconnaissance.
 
-## خطوات التثبيت والاستخدام
+## Overview
 
-### 1️⃣ تجهيز Termux
-```bash
-termux-setup-storage
-pkg update -y && pkg upgrade -y
-pkg install git python nano -y
-python3 -m ensurepip --upgrade
-pip install --upgrade pip
-2️⃣ استنساخ المشروع
-bash
-نسخ الكود
-git clone https://github.com/username/omar-tool.git
-cd omar-tool
-3️⃣ تثبيت الحزم المطلوبة
-bash
-نسخ الكود
-pip install -r requirements.txt
-4️⃣ تشغيل سكربت التثبيت
-bash
-نسخ الكود
-chmod +x install.sh
-bash install.sh
-5️⃣ تفعيل alias
-bash
-نسخ الكود
-source ~/.bashrc
-6️⃣ تشغيل الأداة
-bash
-نسخ الكود
-omar
-خيارات الأداة
-معرفة IP و DNS (A / AAAA / MX / NS)
+Omar-tool is a command line utility that allows you to:
 
-جلب GeoIP
+- Resolve DNS (A/AAAA)
+- Get IP addresses
+- GeoIP lookup
+- Fetch HTTP headers
+- Extract <title> and meta description
+- Read /robots.txt and /sitemap.xml
+- Clone GitHub repositories
 
-جلب HTTP Headers
-
-جلب <title> و meta description
-
-قراءة /robots.txt و /sitemap.xml
-
-استنساخ GitHub Repo
-
-خروج
-
-مشاكل شائعة
-ModuleNotFoundError: نفذ pip install -r requirements.txt
-
-pip not found: تأكد من تثبيت Python3 و pip
-
-git clone failed: تحقق من الرابط أو إذا كان private repo
-
-أمان
-لا تدخل توكنات أو بيانات حساسة في GitHub Repo غير موثوق.
-
-الأداة للاستعلامات العامة فقط، وليست للاختراق.
-
-مثال عملي كامل على Termux
-bash
-نسخ الكود
-termux-setup-storage
-pkg update -y && pkg upgrade -y
-pkg install git python nano -y
-python3 -m ensurepip --upgrade
-pip install --upgrade pip
-git clone https://github.com/username/omar-tool.git
-cd omar-tool
-chmod +x install.sh
-bash install.sh
-source ~/.bashrc
-omar
-yaml
-نسخ الكود
+The main script (`omar.py`) is in Arabic, but all supporting files are in English.
 
 ---
 
-=== FILE: LICENSE (size approx 20 lines) ===
-```text
-MIT License
+## Installation on Termux
 
-Copyright (c) 2025 Omar M. Etman
+1. **Open Termux**.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+2. **Set up storage access:**
+```bash
+termux-setup-storage
+Update and upgrade packages:
+
+bash
+نسخ الكود
+pkg update -y
+pkg upgrade -y
+Install required core packages:
+
+bash
+نسخ الكود
+pkg install git python nano -y
+python3 -m ensurepip
+Remove any old Omar-tool installation:
+
+bash
+نسخ الكود
+rm -rf ~/omar-tool
+Clone the Omar-tool repository:
+
+bash
+نسخ الكود
+git clone https://github.com/omarmetman/omar-tool.git
+cd omar-tool
+Run the install script (adds alias and installs Python dependencies):
+
+bash
+نسخ الكود
+bash install.sh
+source ~/.bashrc
+Running the Tool
+Using the alias (recommended):
+
+bash
+نسخ الكود
+omar
+Directly with Python:
+
+bash
+نسخ الكود
+python3 omar.py
+Usage Examples
+Resolve DNS and get IP:
+
+Input domain: example.com
+
+Output: A record, AAAA record (if dnspython installed)
+
+GeoIP lookup:
+
+Input domain: example.com
+
+Output: IP, Country, Region, City, ISP
+
+Fetch HTTP headers:
+
+Input domain: example.com
+
+Output: All HTTP response headers
+
+Title & meta description:
+
+Input domain: example.com
+
+Output: <title> and meta description from HTML
+
+Read /robots.txt and /sitemap.xml:
+
+Input domain: example.com
+
+Output: Contents if available
+
+Clone GitHub repository:
+
+Input GitHub repo URL
+
+Command executes git clone <url>
+
+Notes & Tips
+Always use the public repository URL for cloning to avoid authentication prompts.
+
+Do not enter sensitive tokens in scripts.
+
+If dnspython is not installed, AAAA records will not be fetched.
+
+To troubleshoot common errors:
+
+ModuleNotFoundError: Run pip install -r requirements.txt
+
+git clone failed: Check the repo URL is public
+
+omar command not found: Run source ~/.bashrc or use python3 omar.py
 
