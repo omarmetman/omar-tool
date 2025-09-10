@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 # Omar-tool Professional v3.0 - Ultimate Reconnaissance Tool
 # Author: Omar M. Etman
 
@@ -35,7 +36,7 @@ try:
 except ImportError:
     BS4LIB = False
 
-# ANSI colors for better UI
+# Enhanced ANSI colors for better UI
 class Colors:
     RED = "\033[91m"
     GREEN = "\033[92m"
@@ -47,6 +48,9 @@ class Colors:
     BOLD = "\033[1m"
     UNDERLINE = "\033[4m"
     RESET = "\033[0m"
+    ORANGE = "\033[38;5;208m"
+    DARK_CYAN = "\033[38;5;30m"
+    PINK = "\033[38;5;206m"
 
 # Clear screen function
 def clear_screen():
@@ -56,16 +60,16 @@ def clear_screen():
 def banner():
     clear_screen()
     print(f"{Colors.PURPLE}{Colors.BOLD}")
-    print("╔══════════════════════════════════════════════════════════════════════════════╗")
-    print("║                                                                              ║")
-    print("║                O M A R - T O O L  v3.0  P R O F E S S I O N A L              ║")
-    print("║                                                                              ║")
-    print("║                 U L T I M A T E   R E C O N N A I S S A N C E                ║")
-    print("║                                                                              ║")
-    print("╚══════════════════════════════════════════════════════════════════════════════╝")
+    print("                                                                              ")
+    print(f"            {Colors.WHITE}╔═╗┌─┐┌┬┐┌─┐  ╔╦╗┌─┐┌─┐┌┬┐┌─┐┌─┐┌┬┐┬┌┐┌┌─┐{Colors.PURPLE}            ")
+    print(f"            {Colors.WHITE}║ ╦├─┤ │ ├─┤   ║║├┤ ├─┤ │ ├┤ │ │ │││││├┤ {Colors.PURPLE}            ")
+    print(f"            {Colors.WHITE}╚═╝┴ ┴ ┴ ┴ ┴  ═╩╝└─┘┴ ┴ ┴ └─┘└─┘─┴┘┴┘└┘└─┘{Colors.PURPLE}            ")
+    print("                                                                              ")
     print(f"{Colors.RESET}")
-    print(f"{Colors.CYAN}Created by: Omar M. Etman{Colors.RESET}")
-    print(f"{Colors.YELLOW}Current time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}{Colors.RESET}")
+    print(f"{Colors.ORANGE}{Colors.BOLD}                          Omar M. Etman{Colors.RESET}")
+    print(f"{Colors.CYAN}{Colors.BOLD}                   Ultimate Reconnaissance Tool{Colors.RESET}")
+    print(f"{Colors.YELLOW}                   Current time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}{Colors.RESET}")
+    print(f"{Colors.PURPLE}                   ===================================={Colors.RESET}")
     print()
 
 # Loading animation
@@ -92,510 +96,502 @@ def extract_domain(url):
     except:
         return url
 
-# DNS resolution function
+# Enhanced DNS resolution function
 def resolve_dns(domain):
+    print(f"\n{Colors.GREEN}[+] DNS Resolution for {domain}{Colors.RESET}")
     print(f"{Colors.YELLOW}[*] Resolving DNS records...{Colors.RESET}")
     loading_animation("Querying DNS servers")
     
-    records = {
-        'A': [], 'AAAA': [], 'MX': [], 'NS': [], 'TXT': [], 'CNAME': [], 'SOA': []
-    }
+    if not DNSLIB:
+        print(f"{Colors.RED}dnspython library not installed. Install it with: pip install dnspython{Colors.RESET}")
+        return
     
     try:
-        # A record
+        # A Records
         try:
-            a_record = socket.gethostbyname(domain)
-            records['A'].append(a_record)
-        except Exception:
-            pass
+            a_records = dns.resolver.resolve(domain, 'A')
+            print(f"\n{Colors.GREEN}A Records:{Colors.RESET}")
+            for record in a_records:
+                print(f"  {record.address}")
+        except:
+            print(f"{Colors.RED}  No A records found{Colors.RESET}")
         
-        if DNSLIB:
-            # AAAA record
-            try:
-                answers = dns.resolver.resolve(domain, 'AAAA')
-                for rdata in answers:
-                    records['AAAA'].append(str(rdata))
-            except Exception:
-                pass
-            
-            # MX records
-            try:
-                answers = dns.resolver.resolve(domain, 'MX')
-                for rdata in answers:
-                    records['MX'].append(f"{rdata.preference} {rdata.exchange}")
-            except Exception:
-                pass
-            
-            # NS records
-            try:
-                answers = dns.resolver.resolve(domain, 'NS')
-                for rdata in answers:
-                    records['NS'].append(str(rdata))
-            except Exception:
-                pass
-            
-            # TXT records
-            try:
-                answers = dns.resolver.resolve(domain, 'TXT')
-                for rdata in answers:
-                    records['TXT'].append(''.join([s.decode() for s in rdata.strings]))
-            except Exception:
-                pass
-            
-            # CNAME record
-            try:
-                answers = dns.resolver.resolve(domain, 'CNAME')
-                for rdata in answers:
-                    records['CNAME'].append(str(rdata))
-            except Exception:
-                pass
-            
-            # SOA record
-            try:
-                answers = dns.resolver.resolve(domain, 'SOA')
-                for rdata in answers:
-                    records['SOA'].append(str(rdata))
-            except Exception:
-                pass
+        # AAAA Records
+        try:
+            aaaa_records = dns.resolver.resolve(domain, 'AAAA')
+            print(f"\n{Colors.GREEN}AAAA Records:{Colors.RESET}")
+            for record in aaaa_records:
+                print(f"  {record.address}")
+        except:
+            print(f"{Colors.RED}  No AAAA records found{Colors.RESET}")
         
-        # Display results
-        for record_type, values in records.items():
-            if values:
-                print(f"{Colors.GREEN}{record_type} records:{Colors.RESET}")
-                for value in values:
-                    print(f"  {value}")
-            else:
-                print(f"{Colors.RED}No {record_type} records found{Colors.RESET}")
-                
+        # MX Records
+        try:
+            mx_records = dns.resolver.resolve(domain, 'MX')
+            print(f"\n{Colors.GREEN}MX Records:{Colors.RESET}")
+            for record in mx_records:
+                print(f"  {record.exchange} (Priority: {record.preference})")
+        except:
+            print(f"{Colors.RED}  No MX records found{Colors.RESET}")
+        
+        # NS Records
+        try:
+            ns_records = dns.resolver.resolve(domain, 'NS')
+            print(f"\n{Colors.GREEN}NS Records:{Colors.RESET}")
+            for record in ns_records:
+                print(f"  {record.target}")
+        except:
+            print(f"{Colors.RED}  No NS records found{Colors.RESET}")
+        
+        # TXT Records
+        try:
+            txt_records = dns.resolver.resolve(domain, 'TXT')
+            print(f"\n{Colors.GREEN}TXT Records:{Colors.RESET}")
+            for record in txt_records:
+                print(f"  {record.strings}")
+        except:
+            print(f"{Colors.RED}  No TXT records found{Colors.RESET}")
+        
+        # CNAME Records
+        try:
+            cname_records = dns.resolver.resolve(domain, 'CNAME')
+            print(f"\n{Colors.GREEN}CNAME Records:{Colors.RESET}")
+            for record in cname_records:
+                print(f"  {record.target}")
+        except:
+            print(f"{Colors.RED}  No CNAME records found{Colors.RESET}")
+        
+        # SOA Records
+        try:
+            soa_records = dns.resolver.resolve(domain, 'SOA')
+            print(f"\n{Colors.GREEN}SOA Records:{Colors.RESET}")
+            for record in soa_records:
+                print(f"  MNAME: {record.mname}")
+                print(f"  RNAME: {record.rname}")
+                print(f"  Serial: {record.serial}")
+                print(f"  Refresh: {record.refresh}")
+                print(f"  Retry: {record.retry}")
+                print(f"  Expire: {record.expire}")
+                print(f"  Minimum TTL: {record.minimum}")
+        except:
+            print(f"{Colors.RED}  No SOA records found{Colors.RESET}")
+            
     except Exception as e:
-        print(f"{Colors.RED}Failed to resolve DNS: {e}{Colors.RESET}")
+        print(f"{Colors.RED}Error in DNS resolution: {e}{Colors.RESET}")
 
-# GeoIP lookup
+# Enhanced GeoIP lookup
 def geo_ip(domain):
+    print(f"\n{Colors.GREEN}[+] GeoIP Lookup for {domain}{Colors.RESET}")
     print(f"{Colors.YELLOW}[*] Looking up GeoIP information...{Colors.RESET}")
     loading_animation("Querying GeoIP database")
     
     try:
         ip = socket.gethostbyname(domain)
-        resp = requests.get(f"http://ip-api.com/json/{ip}", timeout=8).json()
+        response = requests.get(f"http://ip-api.com/json/{ip}")
+        data = response.json()
         
-        if resp['status'] == 'success':
-            print(f"{Colors.GREEN}IP Address: {Colors.RESET}{resp.get('query')}")
-            print(f"{Colors.GREEN}Country: {Colors.RESET}{resp.get('country')} ({resp.get('countryCode')})")
-            print(f"{Colors.GREEN}Region: {Colors.RESET}{resp.get('regionName')} ({resp.get('region')})")
-            print(f"{Colors.GREEN}City: {Colors.RESET}{resp.get('city')}")
-            print(f"{Colors.GREEN}ZIP: {Colors.RESET}{resp.get('zip')}")
-            print(f"{Colors.GREEN}Lat/Lon: {Colors.RESET}{resp.get('lat')}, {resp.get('lon')}")
-            print(f"{Colors.GREEN}Timezone: {Colors.RESET}{resp.get('timezone')}")
-            print(f"{Colors.GREEN}ISP: {Colors.RESET}{resp.get('isp')}")
-            print(f"{Colors.GREEN}Organization: {Colors.RESET}{resp.get('org')}")
-            print(f"{Colors.GREEN}AS: {Colors.RESET}{resp.get('as')}")
+        if data["status"] == "success":
+            print(f"\n{Colors.GREEN}IP Address:{Colors.RESET} {data['query']}")
+            print(f"{Colors.GREEN}Country:{Colors.RESET} {data['country']} ({data['countryCode']})")
+            print(f"{Colors.GREEN}Region:{Colors.RESET} {data['regionName']} ({data['region']})")
+            print(f"{Colors.GREEN}City:{Colors.RESET} {data['city']}")
+            print(f"{Colors.GREEN}ZIP Code:{Colors.RESET} {data['zip']}")
+            print(f"{Colors.GREEN}Latitude:{Colors.RESET} {data['lat']}")
+            print(f"{Colors.GREEN}Longitude:{Colors.RESET} {data['lon']}")
+            print(f"{Colors.GREEN}Timezone:{Colors.RESET} {data['timezone']}")
+            print(f"{Colors.GREEN}ISP:{Colors.RESET} {data['isp']}")
+            print(f"{Colors.GREEN}Organization:{Colors.RESET} {data['org']}")
+            print(f"{Colors.GREEN}AS:{Colors.RESET} {data['as']}")
         else:
-            print(f"{Colors.RED}GeoIP lookup failed: {resp.get('message', 'Unknown error')}{Colors.RESET}")
-            
+            print(f"{Colors.RED}Failed to retrieve GeoIP information{Colors.RESET}")
     except Exception as e:
-        print(f"{Colors.RED}Failed to get GeoIP information: {e}{Colors.RESET}")
+        print(f"{Colors.RED}Error in GeoIP lookup: {e}{Colors.RESET}")
 
-# HTTP headers analysis
+# Enhanced HTTP headers analysis
 def http_headers(domain):
+    print(f"\n{Colors.GREEN}[+] HTTP Headers Analysis for {domain}{Colors.RESET}")
     print(f"{Colors.YELLOW}[*] Retrieving HTTP headers...{Colors.RESET}")
     loading_animation("Connecting to server")
     
     try:
-        # Try HTTPS first
+        # Try with HTTPS first
         try:
-            r = requests.get(f"https://{domain}", timeout=8, allow_redirects=True)
+            response = requests.get(f"https://{domain}", timeout=10)
             protocol = "HTTPS"
         except:
-            # Fall back to HTTP
-            r = requests.get(f"http://{domain}", timeout=8, allow_redirects=True)
-            protocol = "HTTP"
+            # Fallback to HTTP if HTTPS fails
+            try:
+                response = requests.get(f"http://{domain}", timeout=10)
+                protocol = "HTTP"
+            except Exception as e:
+                print(f"{Colors.RED}Failed to connect: {e}{Colors.RESET}")
+                return
         
-        print(f"{Colors.GREEN}Protocol: {Colors.RESET}{protocol}")
-        print(f"{Colors.GREEN}Status Code: {Colors.RESET}{r.status_code}")
-        print(f"{Colors.GREEN}Final URL: {Colors.RESET}{r.url}")
-        print(f"{Colors.GREEN}Server: {Colors.RESET}{r.headers.get('server', 'Not specified')}")
-        print(f"{Colors.GREEN}Content Type: {Colors.RESET}{r.headers.get('content-type', 'Not specified')}")
-        print(f"{Colors.GREEN}Content Length: {Colors.RESET}{r.headers.get('content-length', 'Not specified')}")
+        print(f"\n{Colors.GREEN}Protocol:{Colors.RESET} {protocol}")
+        print(f"{Colors.GREEN}Status Code:{Colors.RESET} {response.status_code}")
+        print(f"{Colors.GREEN}Server:{Colors.RESET} {response.headers.get('Server', 'Not specified')}")
+        print(f"{Colors.GREEN}Content Type:{Colors.RESET} {response.headers.get('Content-Type', 'Not specified')}")
+        print(f"{Colors.GREEN}Content Length:{Colors.RESET} {response.headers.get('Content-Length', 'Not specified')}")
+        print(f"{Colors.GREEN}Connection:{Colors.RESET} {response.headers.get('Connection', 'Not specified')}")
         
         # Security headers check
         security_headers = [
-            'strict-transport-security', 'x-frame-options', 'x-content-type-options',
-            'x-xss-protection', 'content-security-policy', 'referrer-policy',
-            'permissions-policy', 'x-permitted-cross-domain-policies'
+            'Strict-Transport-Security',
+            'Content-Security-Policy',
+            'X-Content-Type-Options',
+            'X-Frame-Options',
+            'X-XSS-Protection',
+            'Referrer-Policy',
+            'Permissions-Policy'
         ]
         
         print(f"\n{Colors.GREEN}Security Headers:{Colors.RESET}")
         for header in security_headers:
-            value = r.headers.get(header, 'Not set')
+            value = response.headers.get(header, 'Not set')
             status = f"{Colors.GREEN}✓" if value != 'Not set' else f"{Colors.RED}✗"
             print(f"  {header}: {value} {status}{Colors.RESET}")
+        
+        # Print all headers
+        print(f"\n{Colors.GREEN}All Headers:{Colors.RESET}")
+        for header, value in response.headers.items():
+            print(f"  {header}: {value}")
             
     except Exception as e:
-        print(f"{Colors.RED}Failed to retrieve HTTP headers: {e}{Colors.RESET}")
+        print(f"{Colors.RED}Error in HTTP headers analysis: {e}{Colors.RESET}")
 
-# Website metadata extraction
+# Enhanced Website metadata extraction
 def meta_info(domain):
+    print(f"\n{Colors.GREEN}[+] Website Metadata Extraction for {domain}{Colors.RESET}")
     print(f"{Colors.YELLOW}[*] Extracting website metadata...{Colors.RESET}")
     loading_animation("Analyzing page content")
     
+    if not BS4LIB:
+        print(f"{Colors.RED}BeautifulSoup library not installed. Install it with: pip install beautifulsoup4{Colors.RESET}")
+        return
+    
     try:
-        r = requests.get(f"http://{domain}", timeout=8)
-        content = r.text
+        # Try with HTTPS first
+        try:
+            response = requests.get(f"https://{domain}", timeout=10)
+        except:
+            # Fallback to HTTP if HTTPS fails
+            try:
+                response = requests.get(f"http://{domain}", timeout=10)
+            except Exception as e:
+                print(f"{Colors.RED}Failed to connect: {e}{Colors.RESET}")
+                return
         
-        # Use BeautifulSoup if available for better parsing
-        if BS4LIB:
-            soup = BeautifulSoup(content, 'html.parser')
-            
-            # Extract title
-            title = soup.title.string if soup.title else "Not found"
-            
-            # Extract meta description
-            description_tag = soup.find('meta', attrs={'name': 'description'})
-            description = description_tag['content'] if description_tag else "Not found"
-            
-            # Extract viewport
-            viewport_tag = soup.find('meta', attrs={'name': 'viewport'})
-            viewport = viewport_tag['content'] if viewport_tag else "Not found"
-            
-            # Extract charset
-            charset_tag = soup.find('meta', attrs={'charset': True})
-            if not charset_tag:
-                charset_tag = soup.find('meta', attrs={'http-equiv': 'content-type'})
-            charset = charset_tag['charset'] if charset_tag and 'charset' in charset_tag.attrs else \
-                     charset_tag['content'] if charset_tag else "Not found"
-            
-            # Extract keywords
-            keywords_tag = soup.find('meta', attrs={'name': 'keywords'})
-            keywords = keywords_tag['content'] if keywords_tag else "Not found"
-            
-            # Extract generator
-            generator_tag = soup.find('meta', attrs={'name': 'generator'})
-            generator = generator_tag['content'] if generator_tag else "Not found"
-            
-            # Extract all meta tags
-            all_meta = soup.find_all('meta')
-            meta_count = len(all_meta)
-            
+        soup = BeautifulSoup(response.content, 'html.parser')
+        
+        # Title
+        title = soup.find('title')
+        print(f"\n{Colors.GREEN}Title:{Colors.RESET} {title.string if title else 'Not found'}")
+        
+        # Meta description
+        meta_desc = soup.find('meta', attrs={'name': 'description'})
+        print(f"{Colors.GREEN}Meta Description:{Colors.RESET} {meta_desc['content'] if meta_desc and 'content' in meta_desc.attrs else 'Not found'}")
+        
+        # Meta keywords
+        meta_keywords = soup.find('meta', attrs={'name': 'keywords'})
+        print(f"{Colors.GREEN}Meta Keywords:{Colors.RESET} {meta_keywords['content'] if meta_keywords and 'content' in meta_keywords.attrs else 'Not found'}")
+        
+        # Viewport
+        viewport = soup.find('meta', attrs={'name': 'viewport'})
+        print(f"{Colors.GREEN}Viewport:{Colors.RESET} {viewport['content'] if viewport and 'content' in viewport.attrs else 'Not found'}")
+        
+        # Charset
+        charset = soup.find('meta', attrs={'charset': True})
+        if not charset:
+            charset = soup.find('meta', attrs={'http-equiv': 'Content-Type'})
+        print(f"{Colors.GREEN}Charset:{Colors.RESET} {charset['charset'] if charset and 'charset' in charset.attrs else charset['content'] if charset and 'content' in charset.attrs else 'Not found'}")
+        
+        # Open Graph tags
+        print(f"\n{Colors.GREEN}Open Graph Tags:{Colors.RESET}")
+        og_tags = soup.find_all('meta', attrs={'property': re.compile(r'^og:', re.I)})
+        if og_tags:
+            for tag in og_tags:
+                print(f"  {tag['property']}: {tag['content']}")
         else:
-            content_lower = content.lower()
-            # Extract title
-            title = "Not found"
-            if "<title>" in content_lower:
-                title_start = content_lower.find("<title>") + 7
-                title_end = content_lower.find("</title>")
-                title = content[title_start:title_end].strip()
-            
-            # Extract meta description
-            description = "Not found"
-            if 'name="description"' in content_lower:
-                desc_start = content_lower.find('content="', content_lower.find('name="description"')) + 9
-                desc_end = content_lower.find('"', desc_start)
-                description = content[desc_start:desc_end].strip()
-            
-            # Extract viewport
-            viewport = "Not found"
-            if 'name="viewport"' in content_lower:
-                viewport_start = content_lower.find('content="', content_lower.find('name="viewport"')) + 9
-                viewport_end = content_lower.find('"', viewport_start)
-                viewport = content[viewport_start:viewport_end].strip()
-            
-            # Extract charset
-            charset = "Not found"
-            if 'charset=' in content_lower:
-                charset_start = content_lower.find('charset=') + 8
-                charset_end = content_lower.find('"', charset_start)
-                if charset_end == -1:
-                    charset_end = content_lower.find('>', charset_start)
-                    if charset_end == -1:
-                        charset_end = content_lower.find(' ', charset_start)
-                charset = content[charset_start:charset_end].strip()
-            
-            keywords = "Not found"
-            generator = "Not found"
-            meta_count = "Unknown"
+            print(f"  {Colors.RED}No Open Graph tags found{Colors.RESET}")
         
-        print(f"{Colors.GREEN}Title: {Colors.RESET}{title}")
-        print(f"{Colors.GREEN}Meta Description: {Colors.RESET}{description}")
-        print(f"{Colors.GREEN}Viewport: {Colors.RESET}{viewport}")
-        print(f"{Colors.GREEN}Charset: {Colors.RESET}{charset}")
+        # Twitter Card tags
+        print(f"\n{Colors.GREEN}Twitter Card Tags:{Colors.RESET}")
+        twitter_tags = soup.find_all('meta', attrs={'name': re.compile(r'^twitter:', re.I)})
+        if twitter_tags:
+            for tag in twitter_tags:
+                print(f"  {tag['name']}: {tag['content']}")
+        else:
+            print(f"  {Colors.RED}No Twitter Card tags found{Colors.RESET}")
         
-        if BS4LIB:
-            print(f"{Colors.GREEN}Keywords: {Colors.RESET}{keywords}")
-            print(f"{Colors.GREEN}Generator: {Colors.RESET}{generator}")
-            print(f"{Colors.GREEN}Total Meta Tags: {Colors.RESET}{meta_count}")
+        # Canonical URL
+        canonical = soup.find('link', attrs={'rel': 'canonical'})
+        print(f"\n{Colors.GREEN}Canonical URL:{Colors.RESET} {canonical['href'] if canonical and 'href' in canonical.attrs else 'Not found'}")
+        
+        # Language
+        language = soup.html.get('lang') if soup.html else 'Not found'
+        print(f"{Colors.GREEN}Language:{Colors.RESET} {language}")
         
     except Exception as e:
-        print(f"{Colors.RED}Failed to extract metadata: {e}{Colors.RESET}")
+        print(f"{Colors.RED}Error in metadata extraction: {e}{Colors.RESET}")
 
-# Robots.txt and sitemap.xml analysis
+# Enhanced Robots.txt and sitemap.xml analysis
 def read_robots_sitemap(domain):
+    print(f"\n{Colors.GREEN}[+] Robots.txt and Sitemap Analysis for {domain}{Colors.RESET}")
     print(f"{Colors.YELLOW}[*] Analyzing robots.txt and sitemap.xml...{Colors.RESET}")
     
     # Check robots.txt
-    print(f"\n{Colors.GREEN}=== robots.txt ==={Colors.RESET}")
     try:
-        r = requests.get(f"http://{domain}/robots.txt", timeout=8)
-        if r.status_code == 200:
-            print(r.text)
-            
-            # Analyze robots.txt
-            disallowed_paths = []
-            for line in r.text.split('\n'):
-                if line.lower().startswith('disallow:'):
-                    path = line.split(':', 1)[1].strip()
-                    if path:  # Skip empty disallow directives
-                        disallowed_paths.append(path)
-            
-            if disallowed_paths:
-                print(f"\n{Colors.YELLOW}Disallowed paths:{Colors.RESET}")
-                for path in disallowed_paths:
-                    print(f"  {path}")
+        response = requests.get(f"http://{domain}/robots.txt", timeout=10)
+        if response.status_code == 200:
+            print(f"\n{Colors.GREEN}robots.txt found:{Colors.RESET}")
+            print(response.text)
         else:
-            print(f"{Colors.RED}robots.txt not found (Status: {r.status_code}){Colors.RESET}")
-    except Exception as e:
-        print(f"{Colors.RED}Failed to retrieve robots.txt: {e}{Colors.RESET}")
+            print(f"{Colors.RED}robots.txt not found or not accessible{Colors.RESET}")
+    except:
+        print(f"{Colors.RED}Failed to retrieve robots.txt{Colors.RESET}")
     
     # Check sitemap.xml
-    print(f"\n{Colors.GREEN}=== sitemap.xml ==={Colors.RESET}")
     try:
-        r = requests.get(f"http://{domain}/sitemap.xml", timeout=8)
-        if r.status_code == 200:
-            # Try to parse as XML
-            if '<?xml' in r.text:
-                print("Valid XML sitemap found")
-                # Count URLs in sitemap
-                url_count = r.text.count('<url>') or r.text.count('<urlset')
-                print(f"Estimated URLs in sitemap: {url_count}")
-            else:
-                print(r.text[:500] + "..." if len(r.text) > 500 else r.text)
+        response = requests.get(f"http://{domain}/sitemap.xml", timeout=10)
+        if response.status_code == 200:
+            print(f"\n{Colors.GREEN}sitemap.xml found:{Colors.RESET}")
+            
+            # Try to parse the sitemap
+            try:
+                soup = BeautifulSoup(response.content, 'xml')
+                urls = soup.find_all('url')
+                if urls:
+                    print(f"Found {len(urls)} URLs in sitemap:")
+                    for url in urls[:5]:  # Show first 5 URLs
+                        loc = url.find('loc')
+                        if loc:
+                            print(f"  {loc.text}")
+                    if len(urls) > 5:
+                        print(f"  ... and {len(urls) - 5} more")
+                else:
+                    print(response.text[:500] + "..." if len(response.text) > 500 else response.text)
+            except:
+                print(response.text[:500] + "..." if len(response.text) > 500 else response.text)
         else:
-            print(f"{Colors.RED}sitemap.xml not found (Status: {r.status_code}){Colors.RESET}")
-    except Exception as e:
-        print(f"{Colors.RED}Failed to retrieve sitemap.xml: {e}{Colors.RESET}")
+            print(f"{Colors.RED}sitemap.xml not found or not accessible{Colors.RESET}")
+    except:
+        print(f"{Colors.RED}Failed to retrieve sitemap.xml{Colors.RESET}")
 
-# WHOIS lookup
+# Enhanced WHOIS lookup
 def whois_lookup(domain):
+    print(f"\n{Colors.GREEN}[+] WHOIS Lookup for {domain}{Colors.RESET}")
+    
     if not WHOISLIB:
         print(f"{Colors.RED}whois library not installed. Install it with: pip install python-whois{Colors.RESET}")
         return
     
     print(f"{Colors.YELLOW}[*] Performing WHOIS lookup...{Colors.RESET}")
-    loading_animation("Querying WHOIS databases")
+    loading_animation("Querying WHOIS database")
     
     try:
         w = whois.whois(domain)
         
-        print(f"{Colors.GREEN}Domain Name: {Colors.RESET}{w.domain_name}")
-        print(f"{Colors.GREEN}Registrar: {Colors.RESET}{w.registrar}")
-        print(f"{Colors.GREEN}WHOIS Server: {Colors.RESET}{w.whois_server}")
-        
+        if w.domain_name:
+            print(f"\n{Colors.GREEN}Domain Name:{Colors.RESET} {w.domain_name}")
+        if w.registrar:
+            print(f"{Colors.GREEN}Registrar:{Colors.RESET} {w.registrar}")
+        if w.whois_server:
+            print(f"{Colors.GREEN}WHOIS Server:{Colors.RESET} {w.whois_server}")
         if w.creation_date:
-            if isinstance(w.creation_date, list):
-                print(f"{Colors.GREEN}Creation Date: {Colors.RESET}{w.creation_date[0]}")
-            else:
-                print(f"{Colors.GREEN}Creation Date: {Colors.RESET}{w.creation_date}")
-        
+            print(f"{Colors.GREEN}Creation Date:{Colors.RESET} {w.creation_date}")
         if w.expiration_date:
-            if isinstance(w.expiration_date, list):
-                print(f"{Colors.GREEN}Expiration Date: {Colors.RESET}{w.expiration_date[0]}")
-            else:
-                print(f"{Colors.GREEN}Expiration Date: {Colors.RESET}{w.expiration_date}")
-        
+            print(f"{Colors.GREEN}Expiration Date:{Colors.RESET} {w.expiration_date}")
         if w.updated_date:
-            if isinstance(w.updated_date, list):
-                print(f"{Colors.GREEN}Updated Date: {Colors.RESET}{w.updated_date[0]}")
-            else:
-                print(f"{Colors.GREEN}Updated Date: {Colors.RESET}{w.updated_date}")
-        
-        print(f"{Colors.GREEN}Name Servers: {Colors.RESET}")
+            print(f"{Colors.GREEN}Updated Date:{Colors.RESET} {w.updated_date}")
         if w.name_servers:
+            print(f"{Colors.GREEN}Name Servers:{Colors.RESET}")
             for ns in w.name_servers:
                 print(f"  {ns}")
-        
-        print(f"{Colors.GREEN}Status: {Colors.RESET}")
         if w.status:
-            for status in w.status:
-                print(f"  {status}")
-                
+            print(f"{Colors.GREEN}Status:{Colors.RESET} {w.status}")
+        if w.emails:
+            print(f"{Colors.GREEN}Emails:{Colors.RESET} {w.emails}")
+        if w.org:
+            print(f"{Colors.GREEN}Organization:{Colors.RESET} {w.org}")
+        if w.address:
+            print(f"{Colors.GREEN}Address:{Colors.RESET} {w.address}")
+        if w.city:
+            print(f"{Colors.GREEN}City:{Colors.RESET} {w.city}")
+        if w.state:
+            print(f"{Colors.GREEN}State:{Colors.RESET} {w.state}")
+        if w.zipcode:
+            print(f"{Colors.GREEN}ZIP Code:{Colors.RESET} {w.zipcode}")
+        if w.country:
+            print(f"{Colors.GREEN}Country:{Colors.RESET} {w.country}")
+            
     except Exception as e:
-        print(f"{Colors.RED}WHOIS lookup failed: {e}{Colors.RESET}")
+        print(f"{Colors.RED}Error in WHOIS lookup: {e}{Colors.RESET}")
 
-# Port scanner
+# Enhanced Port scanner
 def port_scan(domain):
+    print(f"\n{Colors.GREEN}[+] Port Scanner for {domain}{Colors.RESET}")
     print(f"{Colors.YELLOW}[*] Scanning common ports...{Colors.RESET}")
+    loading_animation("Scanning ports")
     
     try:
         ip = socket.gethostbyname(domain)
-        print(f"{Colors.GREEN}Target IP: {Colors.RESET}{ip}")
+        print(f"\n{Colors.GREEN}Target IP:{Colors.RESET} {ip}")
         
-        common_ports = [
-            21, 22, 23, 25, 53, 80, 110, 135, 139, 143, 
-            443, 445, 993, 995, 1723, 3306, 3389, 5900, 
-            8080, 8443, 8888, 10000
-        ]
+        # Common ports to scan
+        ports = [21, 22, 23, 25, 53, 80, 110, 111, 135, 139, 143, 443, 445, 993, 995, 1723, 3306, 3389, 5900, 8080]
         
-        open_ports = []
+        print(f"{Colors.GREEN}Port\tStatus\tService{Colors.RESET}")
+        print(f"{Colors.PURPLE}----\t------\t-------{Colors.RESET}")
         
-        def check_port(port):
+        def scan_port(port):
             try:
-                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                    s.settimeout(1)
-                    result = s.connect_ex((ip, port))
-                    if result == 0:
-                        # Try to get service banner
-                        try:
-                            s.settimeout(2)
-                            s.send(b'HEAD / HTTP/1.0\r\n\r\n')
-                            banner = s.recv(1024).decode().split('\n')[0]
-                            open_ports.append((port, banner.strip()))
-                        except:
-                            open_ports.append((port, "Unknown service"))
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                sock.settimeout(1)
+                result = sock.connect_ex((ip, port))
+                sock.close()
+                
+                if result == 0:
+                    service = socket.getservbyport(port, 'tcp') if port in [21, 22, 23, 25, 53, 80, 110, 143, 443, 993, 995] else "Unknown"
+                    print(f"{port}\t{Colors.GREEN}Open{Colors.RESET}\t{service}")
+                else:
+                    print(f"{port}\t{Colors.RED}Closed{Colors.RESET}\t-")
             except:
-                pass
+                print(f"{port}\t{Colors.RED}Error{Colors.RESET}\t-")
         
-        # Use threading for faster scanning
-        threads = []
-        for port in common_ports:
-            t = threading.Thread(target=check_port, args=(port,))
-            threads.append(t)
-            t.start()
-        
-        # Show loading animation while scanning
-        end_time = time.time() + 5  # Max 5 seconds for scanning
-        symbols = ['⣾', '⣽', '⣻', '⢿', '⡿', '⣟', '⣯', '⣷']
-        i = 0
-        while any(t.is_alive() for t in threads) and time.time() < end_time:
-            print(f"\r{Colors.YELLOW}{symbols[i]} Scanning ports...{Colors.RESET}", end="")
-            i = (i + 1) % len(symbols)
-            time.sleep(0.1)
-        
-        # Wait for all threads to complete
-        for t in threads:
-            t.join(timeout=0.1)
-        
-        print("\r" + " " * 30 + "\r", end="")
-        
-        if open_ports:
-            print(f"{Colors.GREEN}Open ports:{Colors.RESET}")
-            for port, banner in open_ports:
-                print(f"  {port}: {banner}")
-        else:
-            print(f"{Colors.RED}No common open ports found{Colors.RESET}")
+        # Scan ports sequentially for simplicity
+        for port in ports:
+            scan_port(port)
             
     except Exception as e:
-        print(f"{Colors.RED}Port scan failed: {e}{Colors.RESET}")
+        print(f"{Colors.RED}Error in port scanning: {e}{Colors.RESET}")
 
-# Subdomain enumeration
+# Enhanced Subdomain enumeration
 def subdomain_scan(domain):
+    print(f"\n{Colors.GREEN}[+] Subdomain Scanner for {domain}{Colors.RESET}")
     print(f"{Colors.YELLOW}[*] Scanning for common subdomains...{Colors.RESET}")
+    loading_animation("Enumerating subdomains")
     
     # Common subdomains list
     subdomains = [
-        'www', 'mail', 'ftp', 'localhost', 'webmail', 'smtp', 'pop', 'ns1', 'webdisk',
-        'ns2', 'cpanel', 'whm', 'autodiscover', 'autoconfig', 'm', 'imap', 'test',
-        'ns', 'blog', 'pop3', 'dev', 'www2', 'admin', 'forum', 'news', 'vpn', 'ns3',
-        'mail2', 'new', 'mysql', 'old', 'lists', 'support', 'mobile', 'mx', 'static',
-        'docs', 'beta', 'shop', 'sql', 'secure', 'demo', 'cp', 'calendar', 'wiki',
-        'web', 'media', 'email', 'images', 'img', 'www1', 'intranet', 'portal', 'video',
-        'ipv4', 'api', 'cdn', 'stats', 'dns', 'pic', 'pic', 'ssl', 'search', 'staging',
-        'server', 'app', 'apps', 'cloud', 'login', 'signin', 'account', 'accounts',
-        'download', 'downloads', 'file', 'files', 'video', 'videos', 'image', 'images'
+        "www", "mail", "ftp", "localhost", "webmail", "smtp", "pop", "ns1", "webdisk", "ns2",
+        "cpanel", "whm", "autodiscover", "autoconfig", "m", "imap", "test", "ns", "blog", "pop3",
+        "dev", "www2", "admin", "forum", "news", "vpn", "ns3", "mail2", "new", "mysql", "old",
+        "lists", "support", "mobile", "mx", "static", "docs", "beta", "shop", "sql", "secure",
+        "demo", "cp", "calendar", "wiki", "web", "media", "email", "images", "img", "www1",
+        "intranet", "portal", "video", "sip", "dns2", "api", "cdn", "stats", "dns1", "search",
+        "staging", "server", "mx1", "chat", "download", "remote", "db", "forums", "store", "ad",
+        "newsite", "mirror", "apps", "host", "feeds", "files", "ssl", "crm", "webadmin", "cdn2",
+        "dns", "cdn1", "backup", "monitor", "mail1", "mx2", "cloud", "payment", "ftp2", "git",
+        "owa", "exchange", "app", "archive", "streaming", "irc", "vps", "svn", "ssh", "cms",
+        "web1", "squirrelmail", "roundcube", "help", "mysql2", "mysql1", "direct", "direct-connect",
+        "reports", "smtp2", "smtp1", "panel", "photos", "pic", "pics", "photo", "image", "img2"
     ]
     
     found_subdomains = []
     
+    print(f"\n{Colors.GREEN}Checking subdomains...{Colors.RESET}")
+    
     def check_subdomain(subdomain):
+        full_domain = f"{subdomain}.{domain}"
         try:
-            full_domain = f"{subdomain}.{domain}"
             ip = socket.gethostbyname(full_domain)
             found_subdomains.append((full_domain, ip))
+            print(f"{Colors.GREEN}[+] Found: {full_domain} -> {ip}{Colors.RESET}")
         except:
             pass
     
-    # Use threading for faster scanning
+    # Check subdomains with threading for faster results
     threads = []
     for subdomain in subdomains:
         t = threading.Thread(target=check_subdomain, args=(subdomain,))
         threads.append(t)
         t.start()
+        
+        # Limit concurrent threads to avoid overwhelming the system
+        if len(threads) >= 50:
+            for t in threads:
+                t.join()
+            threads = []
     
-    # Show loading animation while scanning
-    end_time = time.time() + 10  # Max 10 seconds for scanning
-    symbols = ['⣾', '⣽', '⣻', '⢿', '⡿', '⣟', '⣯', '⣷']
-    i = 0
-    while any(t.is_alive() for t in threads) and time.time() < end_time:
-        print(f"\r{Colors.YELLOW}{symbols[i]} Scanning subdomains... ({len(found_subdomains)} found){Colors.RESET}", end="")
-        i = (i + 1) % len(symbols)
-        time.sleep(0.1)
-    
-    # Wait for all threads to complete
+    # Wait for remaining threads
     for t in threads:
-        t.join(timeout=0.1)
-    
-    print("\r" + " " * 50 + "\r", end="")
+        t.join()
     
     if found_subdomains:
-        print(f"{Colors.GREEN}Found subdomains: {Colors.RESET}")
+        print(f"\n{Colors.GREEN}Found {len(found_subdomains)} subdomains:{Colors.RESET}")
         for subdomain, ip in found_subdomains:
             print(f"  {subdomain} -> {ip}")
     else:
-        print(f"{Colors.RED}No common subdomains found{Colors.RESET}")
+        print(f"{Colors.RED}No subdomains found{Colors.RESET}")
 
-# GitHub repository cloning
+# Enhanced GitHub repository cloning
 def clone_repo():
-    url = input("Enter GitHub repository URL: ")
+    url = input(f"\n{Colors.CYAN}Enter GitHub repository URL: {Colors.RESET}")
     if not url:
         print(f"{Colors.RED}No URL provided{Colors.RESET}")
         return
     
     print(f"{Colors.YELLOW}[*] Cloning repository...{Colors.RESET}")
+    loading_animation("Cloning from GitHub")
+    
     try:
-        result = subprocess.run(['git', 'clone', url], capture_output=True, text=True, timeout=60)
+        # Extract repo name from URL
+        repo_name = url.split('/')[-1]
+        if repo_name.endswith('.git'):
+            repo_name = repo_name[:-4]
+        
+        # Create a directory for the cloned repo
+        if not os.path.exists("cloned_repos"):
+            os.makedirs("cloned_repos")
+        
+        # Change to cloned_repos directory
+        os.chdir("cloned_repos")
+        
+        # Clone the repository
+        result = subprocess.run(['git', 'clone', url], capture_output=True, text=True)
+        
         if result.returncode == 0:
-            print(f"{Colors.GREEN}Repository cloned successfully{Colors.RESET}")
+            print(f"{Colors.GREEN}[+] Repository cloned successfully to cloned_repos/{repo_name}{Colors.RESET}")
             
-            # Extract repo name from URL
-            repo_name = url.split('/')[-1]
-            if repo_name.endswith('.git'):
-                repo_name = repo_name[:-4]
+            # Show repo info
+            os.chdir(repo_name)
+            result = subprocess.run(['git', 'log', '--oneline', '-5'], capture_output=True, text=True)
+            if result.returncode == 0:
+                print(f"\n{Colors.GREEN}Last 5 commits:{Colors.RESET}")
+                print(result.stdout)
+            
+            result = subprocess.run(['git', 'remote', '-v'], capture_output=True, text=True)
+            if result.returncode == 0:
+                print(f"{Colors.GREEN}Remote info:{Colors.RESET}")
+                print(result.stdout)
                 
-            print(f"{Colors.GREEN}Repository location: {os.getcwd()}/{repo_name}{Colors.RESET}")
         else:
-            print(f"{Colors.RED}Failed to clone repository: {result.stderr}{Colors.RESET}")
+            print(f"{Colors.RED}Error cloning repository: {result.stderr}{Colors.RESET}")
+        
+        # Change back to original directory
+        os.chdir("../..")
+            
     except Exception as e:
-        print(f"{Colors.RED}Failed to clone repository: {e}{Colors.RESET}")
+        print(f"{Colors.RED}Error cloning repository: {e}{Colors.RESET}")
 
 # Comprehensive URL information gathering
 def comprehensive_url_info(url):
-    print(f"{Colors.YELLOW}[*] Comprehensive URL analysis initiated...{Colors.RESET}")
+    print(f"\n{Colors.GREEN}[+] Comprehensive Analysis for {url}{Colors.RESET}")
     
     domain = extract_domain(url)
-    print(f"{Colors.GREEN}Target domain: {Colors.RESET}{domain}")
-    print(f"{Colors.GREEN}Full URL: {Colors.RESET}{url}")
-    print()
+    print(f"{Colors.YELLOW}[*] Extracted domain: {domain}{Colors.RESET}")
     
-    # Execute all reconnaissance functions
-    functions = [
-        ("DNS Resolution", lambda: resolve_dns(domain)),
-        ("GeoIP Lookup", lambda: geo_ip(domain)),
-        ("HTTP Headers Analysis", lambda: http_headers(domain)),
-        ("Metadata Extraction", lambda: meta_info(domain)),
-        ("File Analysis", lambda: read_robots_sitemap(domain)),
-        ("WHOIS Lookup", lambda: whois_lookup(domain)),
-        ("Port Scanning", lambda: port_scan(domain)),
-        ("Subdomain Enumeration", lambda: subdomain_scan(domain))
-    ]
+    # Perform all checks
+    resolve_dns(domain)
+    geo_ip(domain)
+    http_headers(domain)
+    meta_info(domain)
+    read_robots_sitemap(domain)
+    whois_lookup(domain)
+    port_scan(domain)
+    subdomain_scan(domain)
     
-    for name, func in functions:
-        print(f"{Colors.CYAN}{Colors.BOLD}=== {name} ==={Colors.RESET}")
-        try:
-            func()
-        except Exception as e:
-            print(f"{Colors.RED}Error in {name}: {e}{Colors.RESET}")
-        print()
-    
-    print(f"{Colors.GREEN}{Colors.BOLD}[+] Comprehensive analysis completed!{Colors.RESET}")
+    print(f"\n{Colors.GREEN}[+] Comprehensive analysis completed!{Colors.RESET}")
 
 # Main menu
 def main_menu():
@@ -614,50 +610,45 @@ def main_menu():
         print(f"{Colors.CYAN}10){Colors.RESET} Comprehensive URL Analysis (ALL IN ONE)")
         print(f"{Colors.CYAN} 0){Colors.RESET} Exit")
         print()
-
-        try:
-            choice = input(f"{Colors.YELLOW}Enter your choice: {Colors.RESET}")
-            
-            if choice == "1":
-                domain = input("Enter domain: ")
-                resolve_dns(domain)
-            elif choice == "2":
-                domain = input("Enter domain: ")
-                geo_ip(domain)
-            elif choice == "3":
-                domain = input("Enter domain: ")
-                http_headers(domain)
-            elif choice == "4":
-                domain = input("Enter domain: ")
-                meta_info(domain)
-            elif choice == "5":
-                domain = input("Enter domain: ")
-                read_robots_sitemap(domain)
-            elif choice == "6":
-                domain = input("Enter domain: ")
-                whois_lookup(domain)
-            elif choice == "7":
-                domain = input("Enter domain: ")
-                port_scan(domain)
-            elif choice == "8":
-                domain = input("Enter domain: ")
-                subdomain_scan(domain)
-            elif choice == "9":
-                clone_repo()
-            elif choice == "10":
-                url = input("Enter URL: ")
-                comprehensive_url_info(url)
-            elif choice == "0":
-                print(f"{Colors.GREEN}Goodbye!{Colors.RESET}")
-                break
-            else:
-                print(f"{Colors.RED}Invalid choice!{Colors.RESET}")
-            
-            input(f"\n{Colors.YELLOW}Press Enter to continue...{Colors.RESET}")
-            
-        except KeyboardInterrupt:
-            print(f"\n{Colors.RED}Operation cancelled{Colors.RESET}")
-            break
+        
+        choice = input(f"{Colors.WHITE}Enter your choice: {Colors.RESET}")
+        
+        if choice == "1":
+            domain = input(f"{Colors.CYAN}Enter domain: {Colors.RESET}")
+            resolve_dns(domain)
+        elif choice == "2":
+            domain = input(f"{Colors.CYAN}Enter domain: {Colors.RESET}")
+            geo_ip(domain)
+        elif choice == "3":
+            domain = input(f"{Colors.CYAN}Enter domain: {Colors.RESET}")
+            http_headers(domain)
+        elif choice == "4":
+            domain = input(f"{Colors.CYAN}Enter domain: {Colors.RESET}")
+            meta_info(domain)
+        elif choice == "5":
+            domain = input(f"{Colors.CYAN}Enter domain: {Colors.RESET}")
+            read_robots_sitemap(domain)
+        elif choice == "6":
+            domain = input(f"{Colors.CYAN}Enter domain: {Colors.RESET}")
+            whois_lookup(domain)
+        elif choice == "7":
+            domain = input(f"{Colors.CYAN}Enter domain: {Colors.RESET}")
+            port_scan(domain)
+        elif choice == "8":
+            domain = input(f"{Colors.CYAN}Enter domain: {Colors.RESET}")
+            subdomain_scan(domain)
+        elif choice == "9":
+            clone_repo()
+        elif choice == "10":
+            url = input(f"{Colors.CYAN}Enter URL: {Colors.RESET}")
+            comprehensive_url_info(url)
+        elif choice == "0":
+            print(f"{Colors.GREEN}Thank you for using Omar-tool Professional!{Colors.RESET}")
+            sys.exit(0)
+        else:
+            print(f"{Colors.RED}Invalid choice. Please try again.{Colors.RESET}")
+        
+        input(f"\n{Colors.CYAN}Press Enter to continue...{Colors.RESET}")
 
 if __name__ == "__main__":
     try:
