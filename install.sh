@@ -1,22 +1,23 @@
 #!/bin/bash
-# Omar-tool setup script for Termux (English)
+# Omar-tool Professional Setup Script
 
-echo "[*] Updating system..."
+echo -e "\033[1;34m[*] Updating system...\033[0m"
 pkg update -y
 pkg upgrade -y
 
-echo "[*] Installing core packages..."
+echo -e "\033[1;34m[*] Installing core packages...\033[0m"
 pkg install git python nano -y
-python3 -m ensurepip
+python3 -m ensurepip --upgrade
 
-echo "[*] Removing old Omar-tool..."
+echo -e "\033[1;34m[*] Removing old Omar-tool...\033[0m"
 rm -rf ~/omar-tool
 
-echo "[*] Cloning Omar-tool..."
+echo -e "\033[1;34m[*] Cloning Omar-tool...\033[0m"
 git clone https://github.com/omarmetman/omar-tool.git
-cd omar-tool || { echo "❌ Folder not found!"; exit 1; }
+cd omar-tool || { echo -e "\033[1;31m❌ Folder not found!\033[0m"; exit 1; }
 
-echo "[*] Installing required Python packages..."
+echo -e "\033[1;34m[*] Installing required Python packages...\033[0m"
+pip install --upgrade pip
 pip install -r requirements.txt
 
 # Add alias
@@ -28,6 +29,7 @@ for f in "${FILES[@]}"; do
     fi
 done
 
-echo "[✅] Setup completed!"
-echo "Run the tool with: omar"
-echo "Activate alias immediately: source ~/.bashrc"
+echo -e "\033[1;32m[✅] Professional Omar-tool setup completed!\033[0m"
+echo -e "\033[1;33mRun the tool with: omar\033[0m"
+echo -e "\033[1;33mActivate alias immediately: source ~/.bashrc\033[0m"
+echo -e "\033[1;36mNew features: WHOIS lookup, port scanning, subdomain enumeration, security headers analysis\033[0m"
