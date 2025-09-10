@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Omar-tool Professional Version
+# Omar-tool Professional v3.0 - Ultimate Reconnaissance Tool
 # Author: Omar M. Etman
 
 import os
@@ -10,6 +10,9 @@ import subprocess
 import json
 import threading
 import time
+import re
+import urllib.parse
+import ipaddress
 from datetime import datetime
 from time import sleep
 
@@ -25,6 +28,12 @@ try:
     WHOISLIB = True
 except ImportError:
     WHOISLIB = False
+
+try:
+    from bs4 import BeautifulSoup
+    BS4LIB = True
+except ImportError:
+    BS4LIB = False
 
 # ANSI colors for better UI
 class Colors:
@@ -47,14 +56,13 @@ def clear_screen():
 def banner():
     clear_screen()
     print(f"{Colors.PURPLE}{Colors.BOLD}")
-    print("╔══════════════════════════════════════════════════════════════╗")
-    print("║                                                              ║")
-    print("║                 O M A R - T O O L  v2.0                      ║")
-    print("║                 P R O F E S S I O N A L                      ║")
-    print("║                                                              ║")
-    print("║         Comprehensive Cybersecurity Assessment Tool          ║")
-    print("║                                                              ║")
-    print("╚══════════════════════════════════════════════════════════════╝")
+    print("╔══════════════════════════════════════════════════════════════════════════════╗")
+    print("║                                                                              ║")
+    print("║                O M A R - T O O L  v3.0  P R O F E S S I O N A L              ║")
+    print("║                                                                              ║")
+    print("║                 U L T I M A T E   R E C O N N A I S S A N C E                ║")
+    print("║                                                                              ║")
+    print("╚══════════════════════════════════════════════════════════════════════════════╝")
     print(f"{Colors.RESET}")
     print(f"{Colors.CYAN}Created by: Omar M. Etman{Colors.RESET}")
     print(f"{Colors.YELLOW}Current time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}{Colors.RESET}")
@@ -71,13 +79,26 @@ def loading_animation(message, duration=2):
         time.sleep(0.1)
     print("\r" + " " * (len(message) + 2) + "\r", end="")
 
+# Extract domain from URL
+def extract_domain(url):
+    try:
+        parsed_url = urllib.parse.urlparse(url)
+        if parsed_url.netloc:
+            return parsed_url.netloc
+        elif parsed_url.path:
+            return parsed_url.path.split('/')[0]
+        else:
+            return url
+    except:
+        return url
+
 # DNS resolution function
 def resolve_dns(domain):
     print(f"{Colors.YELLOW}[*] Resolving DNS records...{Colors.RESET}")
     loading_animation("Querying DNS servers")
     
     records = {
-        'A': [], 'AAAA': [], 'MX': [], 'NS': [], 'TXT': [], 'CNAME': []
+        'A': [], 'AAAA': [], 'MX': [], 'NS': [], 'TXT': [], 'CNAME': [], 'SOA': []
     }
     
     try:
@@ -126,6 +147,14 @@ def resolve_dns(domain):
                 answers = dns.resolver.resolve(domain, 'CNAME')
                 for rdata in answers:
                     records['CNAME'].append(str(rdata))
+            except Exception:
+                pass
+            
+            # SOA record
+            try:
+                answers = dns.resolver.resolve(domain, 'SOA')
+                for rdata in answers:
+                    records['SOA'].append(str(rdata))
             except Exception:
                 pass
         
@@ -192,7 +221,8 @@ def http_headers(domain):
         # Security headers check
         security_headers = [
             'strict-transport-security', 'x-frame-options', 'x-content-type-options',
-            'x-xss-protection', 'content-security-policy', 'referrer-policy'
+            'x-xss-protection', 'content-security-policy', 'referrer-policy',
+            'permissions-policy', 'x-permitted-cross-domain-policies'
         ]
         
         print(f"\n{Colors.GREEN}Security Headers:{Colors.RESET}")
@@ -211,44 +241,89 @@ def meta_info(domain):
     
     try:
         r = requests.get(f"http://{domain}", timeout=8)
-        content = r.text.lower()
+        content = r.text
         
-        # Extract title
-        title = "Not found"
-        if "<title>" in content:
-            title_start = content.find("<title>") + 7
-            title_end = content.find("</title>")
-            title = content[title_start:title_end].strip()
-        
-        # Extract meta description
-        description = "Not found"
-        if 'name="description"' in content:
-            desc_start = content.find('content="', content.find('name="description"')) + 9
-            desc_end = content.find('"', desc_start)
-            description = content[desc_start:desc_end].strip()
-        
-        # Extract viewport
-        viewport = "Not found"
-        if 'name="viewport"' in content:
-            viewport_start = content.find('content="', content.find('name="viewport"')) + 9
-            viewport_end = content.find('"', viewport_start)
-            viewport = content[viewport_start:viewport_end].strip()
-        
-        # Extract charset
-        charset = "Not found"
-        if 'charset=' in content:
-            charset_start = content.find('charset=') + 8
-            charset_end = content.find('"', charset_start)
-            if charset_end == -1:
-                charset_end = content.find('>', charset_start)
+        # Use BeautifulSoup if available for better parsing
+        if BS4LIB:
+            soup = BeautifulSoup(content, 'html.parser')
+            
+            # Extract title
+            title = soup.title.string if soup.title else "Not found"
+            
+            # Extract meta description
+            description_tag = soup.find('meta', attrs={'name': 'description'})
+            description = description_tag['content'] if description_tag else "Not found"
+            
+            # Extract viewport
+            viewport_tag = soup.find('meta', attrs={'name': 'viewport'})
+            viewport = viewport_tag['content'] if viewport_tag else "Not found"
+            
+            # Extract charset
+            charset_tag = soup.find('meta', attrs={'charset': True})
+            if not charset_tag:
+                charset_tag = soup.find('meta', attrs={'http-equiv': 'content-type'})
+            charset = charset_tag['charset'] if charset_tag and 'charset' in charset_tag.attrs else \
+                     charset_tag['content'] if charset_tag else "Not found"
+            
+            # Extract keywords
+            keywords_tag = soup.find('meta', attrs={'name': 'keywords'})
+            keywords = keywords_tag['content'] if keywords_tag else "Not found"
+            
+            # Extract generator
+            generator_tag = soup.find('meta', attrs={'name': 'generator'})
+            generator = generator_tag['content'] if generator_tag else "Not found"
+            
+            # Extract all meta tags
+            all_meta = soup.find_all('meta')
+            meta_count = len(all_meta)
+            
+        else:
+            content_lower = content.lower()
+            # Extract title
+            title = "Not found"
+            if "<title>" in content_lower:
+                title_start = content_lower.find("<title>") + 7
+                title_end = content_lower.find("</title>")
+                title = content[title_start:title_end].strip()
+            
+            # Extract meta description
+            description = "Not found"
+            if 'name="description"' in content_lower:
+                desc_start = content_lower.find('content="', content_lower.find('name="description"')) + 9
+                desc_end = content_lower.find('"', desc_start)
+                description = content[desc_start:desc_end].strip()
+            
+            # Extract viewport
+            viewport = "Not found"
+            if 'name="viewport"' in content_lower:
+                viewport_start = content_lower.find('content="', content_lower.find('name="viewport"')) + 9
+                viewport_end = content_lower.find('"', viewport_start)
+                viewport = content[viewport_start:viewport_end].strip()
+            
+            # Extract charset
+            charset = "Not found"
+            if 'charset=' in content_lower:
+                charset_start = content_lower.find('charset=') + 8
+                charset_end = content_lower.find('"', charset_start)
                 if charset_end == -1:
-                    charset_end = content.find(' ', charset_start)
-            charset = content[charset_start:charset_end].strip()
+                    charset_end = content_lower.find('>', charset_start)
+                    if charset_end == -1:
+                        charset_end = content_lower.find(' ', charset_start)
+                charset = content[charset_start:charset_end].strip()
+            
+            keywords = "Not found"
+            generator = "Not found"
+            meta_count = "Unknown"
         
         print(f"{Colors.GREEN}Title: {Colors.RESET}{title}")
         print(f"{Colors.GREEN}Meta Description: {Colors.RESET}{description}")
         print(f"{Colors.GREEN}Viewport: {Colors.RESET}{viewport}")
         print(f"{Colors.GREEN}Charset: {Colors.RESET}{charset}")
+        
+        if BS4LIB:
+            print(f"{Colors.GREEN}Keywords: {Colors.RESET}{keywords}")
+            print(f"{Colors.GREEN}Generator: {Colors.RESET}{generator}")
+            print(f"{Colors.GREEN}Total Meta Tags: {Colors.RESET}{meta_count}")
         
     except Exception as e:
         print(f"{Colors.RED}Failed to extract metadata: {e}{Colors.RESET}")
@@ -263,6 +338,19 @@ def read_robots_sitemap(domain):
         r = requests.get(f"http://{domain}/robots.txt", timeout=8)
         if r.status_code == 200:
             print(r.text)
+            
+            # Analyze robots.txt
+            disallowed_paths = []
+            for line in r.text.split('\n'):
+                if line.lower().startswith('disallow:'):
+                    path = line.split(':', 1)[1].strip()
+                    if path:  # Skip empty disallow directives
+                        disallowed_paths.append(path)
+            
+            if disallowed_paths:
+                print(f"\n{Colors.YELLOW}Disallowed paths:{Colors.RESET}")
+                for path in disallowed_paths:
+                    print(f"  {path}")
         else:
             print(f"{Colors.RED}robots.txt not found (Status: {r.status_code}){Colors.RESET}")
     except Exception as e:
@@ -276,6 +364,9 @@ def read_robots_sitemap(domain):
             # Try to parse as XML
             if '<?xml' in r.text:
                 print("Valid XML sitemap found")
+                # Count URLs in sitemap
+                url_count = r.text.count('<url>') or r.text.count('<urlset')
+                print(f"Estimated URLs in sitemap: {url_count}")
             else:
                 print(r.text[:500] + "..." if len(r.text) > 500 else r.text)
         else:
@@ -338,7 +429,11 @@ def port_scan(domain):
         ip = socket.gethostbyname(domain)
         print(f"{Colors.GREEN}Target IP: {Colors.RESET}{ip}")
         
-        common_ports = [21, 22, 23, 25, 53, 80, 110, 135, 139, 143, 443, 445, 993, 995, 1723, 3306, 3389, 5900, 8080]
+        common_ports = [
+            21, 22, 23, 25, 53, 80, 110, 135, 139, 143, 
+            443, 445, 993, 995, 1723, 3306, 3389, 5900, 
+            8080, 8443, 8888, 10000
+        ]
         
         open_ports = []
         
@@ -348,7 +443,14 @@ def port_scan(domain):
                     s.settimeout(1)
                     result = s.connect_ex((ip, port))
                     if result == 0:
-                        open_ports.append(port)
+                        # Try to get service banner
+                        try:
+                            s.settimeout(2)
+                            s.send(b'HEAD / HTTP/1.0\r\n\r\n')
+                            banner = s.recv(1024).decode().split('\n')[0]
+                            open_ports.append((port, banner.strip()))
+                        except:
+                            open_ports.append((port, "Unknown service"))
             except:
                 pass
         
@@ -375,7 +477,9 @@ def port_scan(domain):
         print("\r" + " " * 30 + "\r", end="")
         
         if open_ports:
-            print(f"{Colors.GREEN}Open ports: {Colors.RESET}{', '.join(map(str, sorted(open_ports)))}")
+            print(f"{Colors.GREEN}Open ports:{Colors.RESET}")
+            for port, banner in open_ports:
+                print(f"  {port}: {banner}")
         else:
             print(f"{Colors.RED}No common open ports found{Colors.RESET}")
             
@@ -394,7 +498,9 @@ def subdomain_scan(domain):
         'mail2', 'new', 'mysql', 'old', 'lists', 'support', 'mobile', 'mx', 'static',
         'docs', 'beta', 'shop', 'sql', 'secure', 'demo', 'cp', 'calendar', 'wiki',
         'web', 'media', 'email', 'images', 'img', 'www1', 'intranet', 'portal', 'video',
-        'ipv4', 'api', 'cdn', 'stats', 'dns', 'pic', 'pic', 'ssl', 'search', 'staging'
+        'ipv4', 'api', 'cdn', 'stats', 'dns', 'pic', 'pic', 'ssl', 'search', 'staging',
+        'server', 'app', 'apps', 'cloud', 'login', 'signin', 'account', 'accounts',
+        'download', 'downloads', 'file', 'files', 'video', 'videos', 'image', 'images'
     ]
     
     found_subdomains = []
@@ -402,8 +508,8 @@ def subdomain_scan(domain):
     def check_subdomain(subdomain):
         try:
             full_domain = f"{subdomain}.{domain}"
-            socket.gethostbyname(full_domain)
-            found_subdomains.append(full_domain)
+            ip = socket.gethostbyname(full_domain)
+            found_subdomains.append((full_domain, ip))
         except:
             pass
     
@@ -431,8 +537,8 @@ def subdomain_scan(domain):
     
     if found_subdomains:
         print(f"{Colors.GREEN}Found subdomains: {Colors.RESET}")
-        for subdomain in found_subdomains:
-            print(f"  {subdomain}")
+        for subdomain, ip in found_subdomains:
+            print(f"  {subdomain} -> {ip}")
     else:
         print(f"{Colors.RED}No common subdomains found{Colors.RESET}")
 
@@ -448,17 +554,55 @@ def clone_repo():
         result = subprocess.run(['git', 'clone', url], capture_output=True, text=True, timeout=60)
         if result.returncode == 0:
             print(f"{Colors.GREEN}Repository cloned successfully{Colors.RESET}")
+            
+            # Extract repo name from URL
+            repo_name = url.split('/')[-1]
+            if repo_name.endswith('.git'):
+                repo_name = repo_name[:-4]
+                
+            print(f"{Colors.GREEN}Repository location: {os.getcwd()}/{repo_name}{Colors.RESET}")
         else:
             print(f"{Colors.RED}Failed to clone repository: {result.stderr}{Colors.RESET}")
     except Exception as e:
         print(f"{Colors.RED}Failed to clone repository: {e}{Colors.RESET}")
+
+# Comprehensive URL information gathering
+def comprehensive_url_info(url):
+    print(f"{Colors.YELLOW}[*] Comprehensive URL analysis initiated...{Colors.RESET}")
+    
+    domain = extract_domain(url)
+    print(f"{Colors.GREEN}Target domain: {Colors.RESET}{domain}")
+    print(f"{Colors.GREEN}Full URL: {Colors.RESET}{url}")
+    print()
+    
+    # Execute all reconnaissance functions
+    functions = [
+        ("DNS Resolution", lambda: resolve_dns(domain)),
+        ("GeoIP Lookup", lambda: geo_ip(domain)),
+        ("HTTP Headers Analysis", lambda: http_headers(domain)),
+        ("Metadata Extraction", lambda: meta_info(domain)),
+        ("File Analysis", lambda: read_robots_sitemap(domain)),
+        ("WHOIS Lookup", lambda: whois_lookup(domain)),
+        ("Port Scanning", lambda: port_scan(domain)),
+        ("Subdomain Enumeration", lambda: subdomain_scan(domain))
+    ]
+    
+    for name, func in functions:
+        print(f"{Colors.CYAN}{Colors.BOLD}=== {name} ==={Colors.RESET}")
+        try:
+            func()
+        except Exception as e:
+            print(f"{Colors.RED}Error in {name}: {e}{Colors.RESET}")
+        print()
+    
+    print(f"{Colors.GREEN}{Colors.BOLD}[+] Comprehensive analysis completed!{Colors.RESET}")
 
 # Main menu
 def main_menu():
     while True:
         banner()
         print(f"{Colors.BOLD}Select an option:{Colors.RESET}")
-        print(f"{Colors.CYAN} 1){Colors.RESET} DNS Resolution (A, AAAA, MX, NS, TXT, CNAME)")
+        print(f"{Colors.CYAN} 1){Colors.RESET} DNS Resolution (A, AAAA, MX, NS, TXT, CNAME, SOA)")
         print(f"{Colors.CYAN} 2){Colors.RESET} GeoIP Lookup")
         print(f"{Colors.CYAN} 3){Colors.RESET} HTTP Headers Analysis")
         print(f"{Colors.CYAN} 4){Colors.RESET} Website Metadata Extraction")
@@ -467,6 +611,7 @@ def main_menu():
         print(f"{Colors.CYAN} 7){Colors.RESET} Port Scanner")
         print(f"{Colors.CYAN} 8){Colors.RESET} Subdomain Scanner")
         print(f"{Colors.CYAN} 9){Colors.RESET} Clone GitHub Repository")
+        print(f"{Colors.CYAN}10){Colors.RESET} Comprehensive URL Analysis (ALL IN ONE)")
         print(f"{Colors.CYAN} 0){Colors.RESET} Exit")
         print()
 
@@ -499,6 +644,9 @@ def main_menu():
                 subdomain_scan(domain)
             elif choice == "9":
                 clone_repo()
+            elif choice == "10":
+                url = input("Enter URL: ")
+                comprehensive_url_info(url)
             elif choice == "0":
                 print(f"{Colors.GREEN}Goodbye!{Colors.RESET}")
                 break
