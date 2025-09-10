@@ -1,26 +1,26 @@
-# Omar-tool
+# Omar-tool Professional
 
-Omar M. Etman - Command line tool for site/domain reconnaissance.
+Omar M. Etman - Comprehensive cybersecurity assessment and reconnaissance tool.
 
 ## Overview
 
-Omar-tool is a command line utility that allows you to:
+Omar-tool Professional is an enhanced command-line utility for comprehensive domain and network reconnaissance. It provides:
 
-- Resolve DNS (A/AAAA)
-- Get IP addresses
-- GeoIP lookup
-- Fetch HTTP headers
-- Extract <title> and meta description
-- Read /robots.txt and /sitemap.xml
-- Clone GitHub repositories
-
-The main script (`omar.py`) is in Arabic, but all supporting files are in English.
+- **DNS Analysis**: Complete DNS records (A, AAAA, MX, NS, TXT, CNAME)
+- **GeoIP Lookup**: Detailed geographical information about servers
+- **HTTP Headers Analysis**: Full header inspection with security assessment
+- **Metadata Extraction**: Title, meta description, viewport, and charset
+- **File Analysis**: robots.txt and sitemap.xml inspection
+- **WHOIS Lookup**: Domain registration information
+- **Port Scanning**: Common port scanning with threading
+- **Subdomain Enumeration**: Common subdomain discovery
+- **GitHub Integration**: Repository cloning functionality
 
 ---
 
 ## Installation on Termux
 
-1. **Open Termux**.
+1. **Open Termux**
 
 2. **Set up storage access:**
 ```bash
@@ -28,92 +28,105 @@ termux-setup-storage
 Update and upgrade packages:
 
 bash
-نسخ الكود
 pkg update -y
 pkg upgrade -y
 Install required core packages:
 
 bash
-نسخ الكود
 pkg install git python nano -y
 python3 -m ensurepip
 Remove any old Omar-tool installation:
 
 bash
-نسخ الكود
 rm -rf ~/omar-tool
-Clone the Omar-tool repository:
+Clone the repository:
 
 bash
-نسخ الكود
 git clone https://github.com/omarmetman/omar-tool.git
 cd omar-tool
-Run the install script (adds alias and installs Python dependencies):
+Run the install script:
 
 bash
-نسخ الكود
 bash install.sh
 source ~/.bashrc
 Running the Tool
 Using the alias (recommended):
 
 bash
-نسخ الكود
 omar
 Directly with Python:
 
 bash
-نسخ الكود
 python3 omar.py
 Usage Examples
-Resolve DNS and get IP:
-
+1. Complete DNS Analysis
+text
 Input domain: example.com
-
-Output: A record, AAAA record (if dnspython installed)
-
-GeoIP lookup:
-
+Output: A, AAAA, MX, NS, TXT, and CNAME records
+2. Detailed GeoIP Lookup
+text
 Input domain: example.com
-
-Output: IP, Country, Region, City, ISP
-
-Fetch HTTP headers:
-
+Output: IP, Country, Region, City, ISP, Coordinates, Timezone
+3. HTTP Headers with Security Assessment
+text
 Input domain: example.com
-
-Output: All HTTP response headers
-
-Title & meta description:
-
+Output: All headers plus security header analysis (HSTS, CSP, X-Frame-Options, etc.)
+4. Website Metadata Extraction
+text
 Input domain: example.com
-
-Output: <title> and meta description from HTML
-
-Read /robots.txt and /sitemap.xml:
-
+Output: Title, meta description, viewport, charset
+5. File Analysis
+text
 Input domain: example.com
+Output: Contents of robots.txt and sitemap.xml
+6. WHOIS Lookup
+text
+Input domain: example.com
+Output: Registrar information, creation/expiration dates, name servers
+7. Port Scanning
+text
+Input domain: example.com
+Output: List of open common ports (21, 22, 80, 443, etc.)
+8. Subdomain Enumeration
+text
+Input domain: example.com
+Output: List of discovered subdomains
+9. GitHub Repository Cloning
+text
+Input: GitHub repository URL
+Action: Clones the repository using git clone
+New Professional Features
+Threaded Operations: Faster port scanning and subdomain enumeration
 
-Output: Contents if available
+Security Headers Analysis: Checks for important security headers
 
-Clone GitHub repository:
+Comprehensive DNS: Full DNS record analysis beyond basic A/AAAA
 
-Input GitHub repo URL
+Visual Enhancements: Professional UI with loading animations
 
-Command executes git clone <url>
+Error Handling: Robust error handling with user-friendly messages
+
+Performance: Optimized for speed with timeout management
 
 Notes & Tips
-Always use the public repository URL for cloning to avoid authentication prompts.
+Always use public repository URLs to avoid authentication issues
 
-Do not enter sensitive tokens in scripts.
+For best performance, ensure a stable internet connection
 
-If dnspython is not installed, AAAA records will not be fetched.
+The tool includes timeouts to prevent hanging operations
 
-To troubleshoot common errors:
+Some features require additional libraries (automatically installed)
 
+Use Ctrl+C to cancel any ongoing operation
+
+Troubleshooting
 ModuleNotFoundError: Run pip install -r requirements.txt
 
-git clone failed: Check the repo URL is public
+git clone failed: Verify the repository URL is correct and accessible
 
 omar command not found: Run source ~/.bashrc or use python3 omar.py
+
+Port scanning slow: This is normal behavior for comprehensive scanning
+
+WHOIS lookup fails: This may happen with some TLDs or restricted domains
 
