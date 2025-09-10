@@ -1,179 +1,155 @@
 #!/usr/bin/env python3
-# Omar-tool: Ultimate Domain Recon Tool
+# Omar-tool main script (Arabic)
 # Author: Omar M. Etman
-# Version: 2025 Ultimate
 
-import sys
 import os
-import subprocess
+import sys
 import socket
 import requests
-from urllib.parse import urlparse
+from time import sleep
 
+# Optional: dnspython
 try:
     import dns.resolver
+    DNSLIB = True
 except ImportError:
-    dns = None
+    DNSLIB = False
 
-BANNER = """
-==========================================
-|       Omar M. Etman - أداة المعلومات       |
-|   Domain / Site Reconnaissance Ultimate  |
-|           نسخة مطوّرة جدًا 2025           |
-==========================================
-"""
+# ANSI colors
+RED = "\033[91m"
+GREEN = "\033[92m"
+BLUE = "\033[94m"
+YELLOW = "\033[93m"
+CYAN = "\033[96m"
+RESET = "\033[0m"
 
-MENU = """
-اختر وظيفة:
-1) معرفة IP و DNS (A / AAAA / MX / NS)
-2) جلب GeoIP للموقع
-3) جلب HTTP Headers
-4) جلب <title> و meta description
-5) قراءة /robots.txt و /sitemap.xml
-6) استنساخ GitHub Repo
-0) خروج
-"""
+def clear_screen():
+    os.system('clear' if os.name != 'nt' else 'cls')
 
-def check_dependencies():
-    missing = []
-    if dns is None:
-        missing.append("dnspython (اختياري لكن يضيف وظائف DNS متقدمة)")
+def banner():
+    clear_screen()
+    print(f"{CYAN}")
+    print("=====================================")
+    print("       Omar M. Etman")
+    print("        TOOL v2.0")
+    print("=====================================")
+    print(f"{RESET}")
+
+def input_ar(msg):
     try:
-        import requests
-    except ImportError:
-        missing.append("requests")
-    if missing:
-        print("\nتحذير: بعض المكتبات مفقودة:", ", ".join(missing))
-        print("لتثبيتها: pip install -r requirements.txt\n")
+        return input(msg[::-1])  # Reverse Arabic text for proper display
+    except KeyboardInterrupt:
+        print(f"\n{RED}تم إلغاء العملية{RESET}")
+        sys.exit()
 
 def resolve_dns(domain):
-    print(f"\n[+] محاولة جلب IP و DNS لـ: {domain}")
+    print(f"{YELLOW}[*] جلب سجلات DNS...{RESET}")
     try:
-        ips = socket.getaddrinfo(domain, None)
-        unique_ips = set([r[4][0] for r in ips])
-        if unique_ips:
-            print("IPs الموجودة:")
-            for ip in unique_ips:
-                print("  ", ip)
-        else:
-            print("لم يتم العثور على أي IP")
-    except Exception as e:
-        print("خطأ أثناء جلب IP:", str(e))
-    if dns:
-        for record_type in ['A','AAAA','MX','NS']:
-            try:
-                answers = dns.resolver.resolve(domain, record_type)
-                print(f"\nسجلات {record_type}:")
-                for r in answers:
-                    print("  ", r.to_text())
-            except Exception:
-                print(f"  لم يتم العثور على سجلات {record_type} أو حدث خطأ.")
-    else:
-        print("تنبيه: dnspython غير مثبت. بعض سجلات DNS لن تظهر.")
-
-def geoip_lookup(ip_or_domain):
-    print(f"\n[+] جلب GeoIP لـ: {ip_or_domain}")
-    try:
-        url = f"http://ip-api.com/json/{ip_or_domain}"
-        resp = requests.get(url, timeout=8)
-        data = resp.json()
-        if data['status'] == 'success':
-            print(f"IP: {data.get('query','-')}")
-            print(f"الدولة: {data.get('country','-')}")
-            print(f"المنطقة: {data.get('regionName','-')}")
-            print(f"المدينة: {data.get('city','-')}")
-            print(f"ISP: {data.get('isp','-')}")
-            print(f"Organization: {data.get('org','-')}")
-            print(f"Latitude / Longitude: {data.get('lat','-')}, {data.get('lon','-')}")
-        else:
-            print("تعذر جلب بيانات GeoIP")
-    except Exception as e:
-        print("خطأ أثناء جلب GeoIP:", str(e))
-
-def fetch_headers(url):
-    print(f"\n[+] جلب HTTP Headers لـ: {url}")
-    try:
-        resp = requests.get(url, timeout=8)
-        for k,v in resp.headers.items():
-            print(f"{k}: {v}")
-    except Exception as e:
-        print("خطأ أثناء جلب الهيدرز:", str(e))
-
-def fetch_title_meta(url):
-    print(f"\n[+] جلب <title> و meta description لـ: {url}")
-    try:
-        resp = requests.get(url, timeout=8)
-        html = resp.text
-        title = "-"
-        meta_desc = "-"
-        if "<title>" in html:
-            start = html.find("<title>")+7
-            end = html.find("</title>", start)
-            title = html[start:end].strip()
-        lower_html = html.lower()
-        if 'name="description"' in lower_html:
-            start = lower_html.find('name="description"')
-            start_content = lower_html.find('content="', start)+9
-            end_content = lower_html.find('"', start_content)
-            meta_desc = html[start_content:end_content]
-        print("Title:", title)
-        print("Meta Description:", meta_desc)
-    except Exception as e:
-        print("خطأ أثناء جلب العنوان والوصف:", str(e))
-
-def fetch_robots_sitemap(domain):
-    print(f"\n[+] قراءة /robots.txt و /sitemap.xml لـ: {domain}")
-    base = f"http://{domain}"
-    for file in ["/robots.txt","/sitemap.xml"]:
+        a_record = socket.gethostbyname(domain)
+        print(f"IP Address (A): {a_record}")
+    except Exception:
+        print(f"{RED}فشل في جلب A record{RESET}")
+    if DNSLIB:
         try:
-            resp = requests.get(base+file, timeout=8)
-            if resp.status_code == 200:
-                content = resp.text
-                print(f"\n{file} موجود (أول 500 حرف):\n{content[:500]}{'...' if len(content)>500 else ''}")
-            else:
-                print(f"{file} غير موجود أو غير قابل للقراءة (Status: {resp.status_code})")
-        except Exception as e:
-            print(f"خطأ أثناء جلب {file}:", str(e))
+            answers = dns.resolver.resolve(domain, 'AAAA')
+            for rdata in answers:
+                print(f"IP Address (AAAA): {rdata}")
+        except Exception:
+            print(f"{RED}فشل في جلب AAAA record{RESET}")
+    else:
+        print(f"{RED}مكتبة dnspython غير مثبتة، سجلات AAAA لن تعمل{RESET}")
 
-def clone_github():
-    url = input("أدخل رابط GitHub repo: ").strip()
-    if not url.startswith("http"):
-        print("رابط غير صالح.")
-        return
+def geo_ip(domain):
+    print(f"{YELLOW}[*] جلب GeoIP...{RESET}")
     try:
-        subprocess.run(["git","clone",url], check=True)
-        print("تم استنساخ المستودع بنجاح.")
-    except subprocess.CalledProcessError as e:
-        print("خطأ أثناء الاستنساخ:", str(e))
+        ip = socket.gethostbyname(domain)
+        resp = requests.get(f"http://ip-api.com/json/{ip}", timeout=8).json()
+        print(f"IP: {resp.get('query')}")
+        print(f"Country: {resp.get('country')}")
+        print(f"Region: {resp.get('regionName')}")
+        print(f"City: {resp.get('city')}")
+        print(f"ISP: {resp.get('isp')}")
+    except Exception:
+        print(f"{RED}فشل في جلب بيانات GeoIP{RESET}")
 
-def main():
-    check_dependencies()
-    print(BANNER)
+def http_headers(domain):
+    print(f"{YELLOW}[*] جلب HTTP headers...{RESET}")
+    try:
+        r = requests.get(f"http://{domain}", timeout=8)
+        for k, v in r.headers.items():
+            print(f"{k}: {v}")
+    except Exception:
+        print(f"{RED}فشل في جلب HTTP headers{RESET}")
+
+def meta_info(domain):
+    print(f"{YELLOW}[*] جلب Title و Meta description...{RESET}")
+    try:
+        r = requests.get(f"http://{domain}", timeout=8).text
+        title = ""
+        description = ""
+        if "<title>" in r:
+            title = r.split("<title>")[1].split("</title>")[0]
+        if 'name="description"' in r:
+            description = r.split('name="description"')[1].split('content="')[1].split('"')[0]
+        print(f"Title: {title}")
+        print(f"Meta description: {description}")
+    except Exception:
+        print(f"{RED}فشل في جلب Title/Meta{RESET}")
+
+def read_robots_sitemap(domain):
+    print(f"{YELLOW}[*] قراءة robots.txt و sitemap.xml...{RESET}")
+    urls = ["/robots.txt", "/sitemap.xml"]
+    for path in urls:
+        try:
+            r = requests.get(f"http://{domain}{path}", timeout=8)
+            if r.status_code == 200:
+                print(f"{path}:\n{r.text}\n")
+            else:
+                print(f"{path} غير موجودة")
+        except Exception:
+            print(f"فشل في جلب {path}")
+
+def clone_repo():
+    url = input_ar("أدخل رابط GitHub للاستنساخ: ")
+    os.system(f"git clone {url}")
+
+def main_menu():
     while True:
-        print(MENU)
-        choice = input("أدخل اختيارك: ").strip()
-        if choice=="1":
-            domain = input("أدخل اسم النطاق (domain.com): ").strip()
-            resolve_dns(domain)
-        elif choice=="2":
-            ip_or_domain = input("أدخل IP أو اسم النطاق: ").strip()
-            geoip_lookup(ip_or_domain)
-        elif choice=="3":
-            url = input("أدخل رابط الموقع (https://example.com): ").strip()
-            fetch_headers(url)
-        elif choice=="4":
-            url = input("أدخل رابط الموقع (https://example.com): ").strip()
-            fetch_title_meta(url)
-        elif choice=="5":
-            domain = input("أدخل اسم النطاق (domain.com): ").strip()
-            fetch_robots_sitemap(domain)
-        elif choice=="6":
-            clone_github()
-        elif choice=="0":
-            print("وداعًا! شكرًا لاستخدام Omar M. Etman Ultimate Tool.")
-            sys.exit(0)
-        else:
-            print("اختيار غير صالح، حاول مرة أخرى.")
+        banner()
+        print("اختر وظيفة:")
+        print("1) معرفة IP و DNS (A / AAAA)")
+        print("2) جلب GeoIP للموقع")
+        print("3) جلب HTTP Headers")
+        print("4) جلب <title> و meta description")
+        print("5) قراءة /robots.txt و /sitemap.xml")
+        print("6) استنساخ GitHub Repo")
+        print("0) خروج")
 
-if __name__=="__main__":
-    main()
+        choice = input_ar("أدخل رقم الخيار: ")
+
+        if choice == "1":
+            domain = input_ar("أدخل اسم الموقع: ")
+            resolve_dns(domain)
+        elif choice == "2":
+            domain = input_ar("أدخل اسم الموقع: ")
+            geo_ip(domain)
+        elif choice == "3":
+            domain = input_ar("أدخل اسم الموقع: ")
+            http_headers(domain)
+        elif choice == "4":
+            domain = input_ar("أدخل اسم الموقع: ")
+            meta_info(domain)
+        elif choice == "5":
+            domain = input_ar("أدخل اسم الموقع: ")
+            read_robots_sitemap(domain)
+        elif choice == "6":
+            clone_repo()
+        elif choice == "0":
+            print(f"{GREEN}وداعًا!{RESET}")
+            break
+        else:
+            print(f"{RED}خيار غير صالح!{RESET}")
+        input_ar("اضغط Enter للعودة للقائمة...")
+
+if __name__ == "__main__":
+    main_menu()
