@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
-# Omar-tool: Enhanced domain/site reconnaissance tool
+# Omar-tool: Ultimate Domain Recon Tool
 # Author: Omar M. Etman
+# Version: 2025 Ultimate
 
-import sys, os, subprocess, socket, requests
+import sys
+import os
+import subprocess
+import socket
+import requests
 from urllib.parse import urlparse
 
 try:
@@ -13,8 +18,8 @@ except ImportError:
 BANNER = """
 ==========================================
 |       Omar M. Etman - أداة المعلومات       |
-|      Domain / Site Reconnaissance       |
-|         نسخة مطوّرة ومحدثة 2025          |
+|   Domain / Site Reconnaissance Ultimate  |
+|           نسخة مطوّرة جدًا 2025           |
 ==========================================
 """
 
@@ -45,9 +50,13 @@ def resolve_dns(domain):
     print(f"\n[+] محاولة جلب IP و DNS لـ: {domain}")
     try:
         ips = socket.getaddrinfo(domain, None)
-        print("IPs الموجودة:")
-        for ip in set([r[4][0] for r in ips]):
-            print("  ", ip)
+        unique_ips = set([r[4][0] for r in ips])
+        if unique_ips:
+            print("IPs الموجودة:")
+            for ip in unique_ips:
+                print("  ", ip)
+        else:
+            print("لم يتم العثور على أي IP")
     except Exception as e:
         print("خطأ أثناء جلب IP:", str(e))
     if dns:
@@ -161,7 +170,7 @@ def main():
         elif choice=="6":
             clone_github()
         elif choice=="0":
-            print("وداعًا! شكرًا لاستخدام Omar M. Etman tool.")
+            print("وداعًا! شكرًا لاستخدام Omar M. Etman Ultimate Tool.")
             sys.exit(0)
         else:
             print("اختيار غير صالح، حاول مرة أخرى.")
