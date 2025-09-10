@@ -1,5 +1,5 @@
 #!/bin/bash
-# Omar-tool Professional Setup Script
+# Omar-tool Professional v3.0 Setup Script
 
 echo -e "\033[1;34m[*] Updating system...\033[0m"
 pkg update -y
@@ -29,7 +29,7 @@ for f in "${FILES[@]}"; do
     fi
 done
 
-echo -e "\033[1;32m[✅] Professional Omar-tool setup completed!\033[0m"
+echo -e "\033[1;32m[✅] Omar-tool Professional v3.0 setup completed!\033[0m"
 echo -e "\033[1;33mRun the tool with: omar\033[0m"
 echo -e "\033[1;33mActivate alias immediately: source ~/.bashrc\033[0m"
-echo -e "\033[1;36mNew features: WHOIS lookup, port scanning, subdomain enumeration, security headers analysis\033[0m"
+echo -e "\033[1;36mNew features: Comprehensive URL analysis, BeautifulSoup integration, enhanced scanning\033[0m"
