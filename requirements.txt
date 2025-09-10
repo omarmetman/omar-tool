@@ -5,3 +5,7 @@ beautifulsoup4
 arabic-reshaper
 python-bidi
 urllib3
+fake-useragent
+phonenumbers
+python-nmap
+builtwith
